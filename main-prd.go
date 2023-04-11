@@ -27,6 +27,7 @@ import (
 )
 
 //go:embed themes/**
+//go:embed themes/go-curses/layouts/_default/**
 var themeFs embed.FS
 
 func getTheme() (t *theme.Theme) {
