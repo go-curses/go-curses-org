@@ -1,0 +1,12 @@
+name = "go-curses theme"
+license = "Apache 2.0"
+licenselink = "https://go-enjin.org/license"
+description = "The go-curses theme."
+homepage = "https://go-curses.org/"
+
+[author]
+    name = "The Go-Curses Team"
+    homepage = "https://go-curses.org/"
+
+[semantic.site]
+  page.stylesheets = ["/css/go-curses.css"]
