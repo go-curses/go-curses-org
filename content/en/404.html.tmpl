@@ -1,0 +1,14 @@
++++
+type = "status"
+title = "404"
+url = "/404"
+searchable = "false"
+sitemap-ignored = "true"
++++
+<header>404 - {{ _ "Not Found" }}</header>
+<section>
+    <div class="content">
+        <h2>{{ .Request.Path }}</h2>
+        <p>{{ _ "The page requested was not found." }}</p>
+    </div>
+</section>
