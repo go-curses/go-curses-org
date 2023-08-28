@@ -1,4 +1,4 @@
-//go:build prd
+//go:build production
 
 // Copyright (c) 2023  The Go-Curses Authors
 //
@@ -19,41 +19,35 @@ package main
 import (
 	"embed"
 
-	"github.com/go-enjin/be/features/fs/embeds/content"
-	publicEmbed "github.com/go-enjin/be/features/fs/embeds/public"
-	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/theme"
+	"github.com/go-enjin/be/features/fs/content"
+	"github.com/go-enjin/be/features/fs/public"
+	"github.com/go-enjin/be/features/fs/themes"
 )
 
-//go:embed themes/**
-//go:embed themes/go-curses/layouts/_default/**
-var themeFs embed.FS
-
-func getTheme() (t *theme.Theme) {
-	var err error
-	if t, err = theme.NewEmbed("themes/go-curses", themeFs); err != nil {
-		log.FatalF("error loading embedded go-curses theme: %v", err)
-	}
-	return
-}
+//go:embed content/**
+var contentFsWWW embed.FS
 
 //go:embed public/**
 var publicFs embed.FS
 
-func getPublicFeature() (f feature.Feature) {
-	f = publicEmbed.New().
-		MountPathFs("/", "public", publicFs).
-		Make()
-	return
-}
+//go:embed themes/**
+//go:embed themes/*/layouts/_default/**
+var themeFs embed.FS
 
-//go:embed content/**
-var contentFs embed.FS
-
-func getContentFeature() (f feature.Feature) {
-	f = content.New().
-		MountPathFs("/", "content", contentFs).
+func init() {
+	fPublic = public.New().
+		MountEmbedPath("/", "public", publicFs).
 		Make()
-	return
+
+	fContent = content.New().
+		MountEmbedPath("/", "content", contentFsWWW).
+		AddToIndexProviders(gPagesPqlFeature).
+		Make()
+
+	fThemes = themes.New().
+		EmbedTheme("themes/go-curses", themeFs).
+		SetTheme("go-curses").
+		Make()
+
+	hotReload = false
 }

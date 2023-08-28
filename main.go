@@ -18,53 +18,72 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-enjin/be/features/outputs/htmlify"
-	pgc "github.com/go-enjin/be/features/pages/caching/stock-pgc"
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be"
-	"github.com/go-enjin/be/features/log/papertrail"
-	"github.com/go-enjin/be/features/pages/formats"
+	"github.com/go-enjin/be/drivers/kvs/gocache"
+	"github.com/go-enjin/be/features/pages/pql"
 	"github.com/go-enjin/be/features/pages/robots"
-	"github.com/go-enjin/be/features/requests/headers/proxy"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
+	"github.com/go-enjin/be/presets/defaults"
 )
 
 var (
-	SiteTag     = "GCO"
-	SiteName    = "Go-Curses"
-	SiteTagLine = "The official Go-Curses project website."
+	gPublicActions = feature.Actions{
+		feature.NewAction("enjin", "view", "page"),
+		feature.NewAction("fs-content", "view", "page"),
+	}
+)
+
+const (
+	gPagesPqlFeature    = "pages-pql"
+	gPagesPqlKvsFeature = "pages-pql-kvs-feature"
+	gPagesPqlKvsCache   = "pages-pql-kvs-cache"
+)
+
+var (
+	fThemes  feature.Feature
+	fContent feature.Feature
+	fPublic  feature.Feature
+
+	hotReload bool
 )
 
 func main() {
 	enjin := be.New().
-		SiteTag(SiteTag).
-		SiteName(SiteName).
-		SiteTagLine(SiteTagLine).
-		SiteCopyrightName(SiteName).
-		SiteCopyrightNotice("All rights reserved").
-		AddFeature(proxy.New().Enable().Make()).
-		AddFeature(formats.New().Defaults().Make()).
-		AddFeature(pgc.New().Make()).
-		AddFeature(htmlify.New().Make()).
+		SiteTag("GCO").
+		SiteName("Go-Curses").
+		SiteTagLine("The official Go-Curses project website.").
+		SiteCopyrightName("Go-Curses").
+		SiteCopyrightNotice("© 2023 All rights reserved").
 		SiteDefaultLanguage(language.English).
-		SiteSupportedLanguages(language.English).
 		SiteLanguageMode(lang.NewPathMode().Make()).
-		AddTheme(getTheme()).
-		SetTheme("go-curses").
-		AddFeature(papertrail.Make()).
+		SiteSupportedLanguages(language.English).
+		Set("SiteTitleReversed", true).
+		Set("SiteTitleSeparator", " | ").
+		Set("SiteLogoUrl", "/media/curses-logo-banner.png").
+		Set("SiteLogoAlt", "Go-Curses logo").
+		AddPreset(defaults.New().Make()).
+		AddFeature(gocache.NewTagged(gPagesPqlKvsFeature).
+			AddMemoryCache(gPagesPqlKvsCache).
+			Make()).
+		AddFeature(pql.NewTagged(gPagesPqlFeature).
+			SetKeyValueCache(gPagesPqlKvsFeature, gPagesPqlKvsCache).
+			Make()).
+		AddFeature(fThemes).
 		AddFeature(robots.New().
 			AddRuleGroup(robots.NewRuleGroup().
 				AddUserAgent("*").AddAllowed("/").Make(),
-			).Make(),
-		).
-		AddFeature(getPublicFeature()).
-		AddFeature(getContentFeature()).
-		SetStatusPage(404, "/").
-		SetStatusPage(500, "/")
-	// add content and status pages
+			).Make()).
+		SetStatusPage(404, "/404").
+		SetStatusPage(500, "/500").
+		SetPublicAccess(gPublicActions...).
+		HotReload(hotReload).
+		AddFeature(fPublic).
+		AddFeature(fContent)
 	if err := enjin.Build().Run(os.Args); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "enjin.Run error: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
 }

@@ -1,6 +1,6 @@
-//go:build dev || !prd
+//go:build !production
 
-// Copyright (c) 2023  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Curses Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,31 +17,30 @@
 package main
 
 import (
-	"github.com/go-enjin/be/features/fs/locals/content"
-	"github.com/go-enjin/be/features/fs/locals/public"
-	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/features/fs/content"
+	"github.com/go-enjin/be/features/fs/public"
+	"github.com/go-enjin/be/features/fs/themes"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/theme"
 )
 
-func getTheme() (t *theme.Theme) {
-	var err error
-	if t, err = theme.NewLocal("themes/go-curses"); err != nil {
-		log.FatalF("error loading local go-curses theme: %v", err)
-	}
-	return
-}
+func init() {
+	// locals environment, early startup debug logging
+	log.Config.LogLevel = log.LevelDebug
+	log.Config.Apply()
 
-func getPublicFeature() (f feature.Feature) {
-	f = public.New().
-		MountPath("/", "public").
+	fPublic = public.New().
+		MountLocalPath("/", "public").
 		Make()
-	return
-}
 
-func getContentFeature() (f feature.Feature) {
-	f = content.New().
-		MountPath("/", "content").
+	fContent = content.New().
+		MountLocalPath("/", "content").
+		AddToIndexProviders(gPagesPqlFeature).
 		Make()
-	return
+
+	fThemes = themes.New().
+		LocalTheme("themes/go-curses").
+		SetTheme("go-curses").
+		Make()
+
+	hotReload = true
 }
