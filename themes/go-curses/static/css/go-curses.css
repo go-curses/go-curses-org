@@ -45,6 +45,16 @@ section div.contents {
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
+section div.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  margin: 0 auto;
+}
+
 img.logo:hover {
   content: url(/media/curses-button-logo-pressed.png);
 }

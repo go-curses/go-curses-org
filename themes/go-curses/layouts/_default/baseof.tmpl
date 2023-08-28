@@ -7,8 +7,9 @@
           {{- if .Format }} data-page-format="{{ .Format | replace ".tmpl" }}"{{ end -}}
           {{- if .Archetype }} data-page-archetype="{{ .Archetype }}"{{ end -}}
   >
-    <main>
-{{ .Content }}
-    </main>
+  <main>
+    {{ .Content }}
+    {{ template "partials/footer.tmpl" . }}
+  </main>
   </body>
 </html>
