@@ -14,16 +14,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-BE_LOCAL_PATH ?= ../be
+-include .env
 
-APP_NAME    ?= be-go-curses-org
-APP_SUMMARY ?= go-curses.org
+BE_LOCAL_PATH ?= ../../go-enjin/be
 
-DENY_DURATION ?= 600
+APP_NAME    := be-go-curses-org
+APP_SUMMARY := go-curses.org
 
-COMMON_TAGS = htmlify,stock_pgc,page_robots,header_proxy,papertrail
-BUILD_TAGS = prd,embeds,$(COMMON_TAGS)
-DEV_BUILD_TAGS = dev,locals,$(COMMON_TAGS)
-EXTRA_PKGS =
+DENY_DURATION := 600
+
+ADD_TAGS_DEFAULTS := true
+
+COMMON_TAGS += driver_fs_embed
+COMMON_TAGS += driver_kvs_gocache memory
+COMMON_TAGS += log_papertrail
+COMMON_TAGS += user_auth_basic
+COMMON_TAGS += user_base_htenv
+COMMON_TAGS += page_pql
+COMMON_TAGS += page_robots
+COMMON_TAGS += fs_theme fs_menu fs_content fs_public
+COMMON_TAGS += ngrokio
+
+BUILD_TAGS     = production embeds $(COMMON_TAGS)
+DEV_BUILD_TAGS = locals $(COMMON_TAGS)
 
 include ./Enjin.mk
